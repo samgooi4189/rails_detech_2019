@@ -1,0 +1,178 @@
+rails new awesome_shop
+
+cd awesome_shop
+vim .rvmrc
+“rvm use 2.5.4@detech2019 --create”
+
+cd .
+bundle install
+
+rails s
+
+
+== Heroku == 
+Add the following to Gemfile:
+“
+group :production do
+  gem 'pg'
+end
+”
+And move the following:
+“
+gem 'sqlite3'
+”
+Into the block “group :development, :test”
+
+bundle install
+
+Add the following to config/database.yml, that replace the production section
+“
+# As with config/secrets.yml, you never want to store sensitive information,
+# like your database password, in your source code. If your source code is
+# ever seen by anyone, they now have access to your database.
+#
+# Instead, provide the password as a unix environment variable when you boot
+# the app. Read http://guides.rubyonrails.org/configuring.html#configuring-a-database
+# for a full rundown on how to provide these environment variables in a
+# production deployment.
+#
+# On Heroku and other platform providers, you may have a full connection URL
+# available as an environment variable. For example:
+#
+#   DATABASE_URL="postgres://myuser:mypass@localhost/somedatabase"
+#
+# You can use this database configuration with:
+#
+#   production:
+#     url: <%= ENV['DATABASE_URL'] %>
+#
+production:
+  adapter: postgresql
+  encoding: unicode
+  # For details on connection pooling, see Rails configuration guide
+  # http://guides.rubyonrails.org/configuring.html#database-pooling
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  database: awesome_shop_production
+  username: awesome_shop
+  password: <%= ENV['AWESOME_SHOP_DATABASE_PASSWORD'] %>
+”
+
+Create Procfile, then add the following to it:
+“
+web: bundle exec puma -t 5:5 -p ${PORT:-3000} -e ${RACK_ENV:-development}
+”
+
+git init
+git add .
+git commit -m “First commit”
+
+rails g scaffold Item name:string unit:integer unit_price:decimal
+rails db:migrate
+Add the following to config/routes.rb :
+“
+root 'items#index'
+”
+git add .
+git commit -m “Scaffold items”
+
+
+heroku create detech2019-ror
+git config --list | grep heroku
+git push heroku master
+heroku run rails db:migrate
+
+
+== add bulma UI framework ==
+Add the following to Gemfile:
+“
+gem "bulma-rails", "~> 0.7.5"
+”
+bundle install
+
+Rename application.css  to application.scss
+add the following line to your application.scss:
+@import "bulma";
+
+Change the style of button for app/views/items/_form.html.erb :
+“
+<div class="actions">
+    <%= form.button 'submit', type: :submit, class: 'button is-primary' %>
+  </div>
+”
+
+https://bulma.io/documentation/layout/section/
+Change the following in app/views/application.hrml.erb :
+“
+<body>
+    <section class="section">
+      <%= yield %>
+    </section>
+  </body>
+”
+
+
+Rename replace the content of app/views/items/index.html.erb with:
+“
+<div class="container">
+    <div class="container is-widescreen">
+      <p id="notice"><%= notice %></p>
+      <h1>Items</h1>
+      <%= link_to 'Add New Item', new_item_path %>
+    </div>
+
+    <div class="columns is-mobile is-multiline">
+        <% @items.each do |item| %>
+          <div class="column is-three-quarters-mobile ">
+          <%= render 'single_item', item: item %>
+          </div>
+        <% end %>
+    </div>
+</div>
+“
+
+Create app/views/items/_single_item.html.erb with:
+“
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      <%= item.name %>
+    </p>
+  </header>
+  <div class="card-content">
+    <div class="content">
+      <div class="column">
+        Available: <%= item.unit %>
+      </div>
+      <div class="column">
+        Price: <%= item.unit_price%>
+      </div>
+    </div>
+  </div>
+  <footer class="card-footer">
+    <a href="<%= item_path(item) %>" class="card-footer-item">Show</a>
+    <a href="<%= edit_item_path(item) %>" class="card-footer-item">Edit</a>
+    <a href="<%= item_path(item) %>" data-method="delete" data-confirm="Are you sure?" rel="nofollow" class="card-footer-item">Delete</a>
+  </footer>
+</div>
+”
+
+Add the following to app/views/layouts/application.html.erb :
+“
+<script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+”
+
+Replace line from app/views/items/index.html.erb :
+“
+<%= link_to 'Add New Item', new_item_path %>
+”
+with :
+“
+<div class="column is-offset-10">
+        <a href="<%= new_item_path %>" class="button">
+          <span class="icon has-text-success">
+              <i class="fas fa-plus"></i>
+            </span>
+        </a>
+      </div>
+”
+
