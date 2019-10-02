@@ -1,0 +1,22 @@
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      <%= item.name %>
+    </p>
+  </header>
+  <div class="card-content">
+    <div class="content">
+      <div class="column">
+        Available: <%= item.unit %>
+      </div>
+      <div class="column">
+        Price: <%= item.unit_price%>
+      </div>
+    </div>
+  </div>
+  <footer class="card-footer">
+    <a href="<%= item_path(item) %>" class="card-footer-item">Show</a>
+    <a href="<%= edit_item_path(item) %>" class="card-footer-item">Edit</a>
+    <a href="<%= item_path(item) %>" data-method="delete" data-confirm="Are you sure?" rel="nofollow" class="card-footer-item">Delete</a>
+  </footer>
+</div>
